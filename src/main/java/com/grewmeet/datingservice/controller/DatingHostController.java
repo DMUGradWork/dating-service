@@ -1,10 +1,12 @@
 package com.grewmeet.datingservice.controller;
 
 import com.grewmeet.datingservice.domain.dating.DatingEvent;
-import com.grewmeet.datingservice.domain.vote.Vote;
+import com.grewmeet.datingservice.dto.event.DatingEventCardDto;
 import com.grewmeet.datingservice.dto.event.DatingEventRegistrationRequestDTO;
-import com.grewmeet.datingservice.dto.event.DatingEventResponse;
+import com.grewmeet.datingservice.dto.event.DatingEventResponseNew;
 import com.grewmeet.datingservice.dto.event.DatingEventUpdateRequestDTO;
+import com.grewmeet.datingservice.dto.vote.CreateVoteRequestDto;
+import com.grewmeet.datingservice.dto.vote.VoteResponseDto;
 import com.grewmeet.datingservice.service.dating.DatingEventCommandService;
 import com.grewmeet.datingservice.service.dating.DatingEventQueryService;
 import com.grewmeet.datingservice.service.dating.DatingEventRegistrationService;
@@ -33,18 +35,14 @@ public class DatingHostController {
     private final DatingEventCommandService datingEventCommandService;
     private final DatingEventQueryService datingEventQueryService;
     private final DatingEventVoteService datingEventVoteService;
-//
-//    @PostMapping("/users")
-//    public ResponseEntity<User> createUser(@Valid @RequestBody UserRegistrationRequestDTO request) {
-//        User savedUser = userRegistrationService.register(request);
-//
-//        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
-//                .path("/{id}")
-//                .buildAndExpand(savedUser.getId())
-//                .toUri();
-//
-//        return ResponseEntity.created(location).body(savedUser);
-//    }
+
+    @GetMapping("/dating-events")
+    public ResponseEntity<List<DatingEventCardDto>> retrieveAllDatingEventsManagedByHost(
+            @PathVariable Long hostId) {
+        List<DatingEventCardDto> events = datingEventQueryService.findAllEventsManagedBy(hostId);
+
+        return ResponseEntity.ok(events);
+    }
 
     @PostMapping("/dating-events")
     private ResponseEntity<DatingEvent> createEvent(
@@ -56,16 +54,8 @@ public class DatingHostController {
         return ResponseEntity.created(location).body(registeredEvent);
     }
 
-    @GetMapping("/dating-events")
-    public ResponseEntity<List<DatingEventResponse>> retrieveAllDatingEventsManagedByHost(
-            @PathVariable Long hostId) {
-        List<DatingEventResponse> events = datingEventQueryService.findAllEventsManagedBy(hostId);
-
-        return ResponseEntity.ok(events);
-    }
-
     @GetMapping("/dating-events/{eventId}")
-    public ResponseEntity<DatingEventResponse> retrieveDatingEventById(
+    public ResponseEntity<DatingEventResponseNew> retrieveDatingEventById(
             @PathVariable Long hostId,
             @PathVariable Long eventId) {
         return ResponseEntity.ok(datingEventQueryService.findByEventId(eventId));
@@ -80,12 +70,12 @@ public class DatingHostController {
     }
 
     @PatchMapping("/dating-events/{eventId}")
-    public ResponseEntity<DatingEventResponse> updateDatingEventConfig(
+    public ResponseEntity<DatingEventResponseNew> updateDatingEventConfig(
             @PathVariable Long hostId,
             @PathVariable Long eventId,
             @RequestBody DatingEventUpdateRequestDTO request) {
         datingEventCommandService.updateWith(eventId,request);
-        DatingEventResponse updated = datingEventQueryService.findByEventId(eventId);
+        DatingEventResponseNew updated = datingEventQueryService.findByEventId(eventId);
 
         return ResponseEntity.ok(updated);
     }
@@ -99,20 +89,58 @@ public class DatingHostController {
         return ResponseEntity.noContent().build();
     }
 
+    // 투표 생성
     @PostMapping("/dating-events/{eventId}/votes")
-    public ResponseEntity<Vote> openVote(
+    public ResponseEntity<VoteResponseDto> createVote(
             @PathVariable Long hostId,
-            @PathVariable Long eventId) {
-        Vote voteAt = datingEventVoteService.createVoteAt(eventId);
+            @PathVariable Long eventId,
+            @Valid @RequestBody CreateVoteRequestDto request) {
+        VoteResponseDto vote = datingEventVoteService.createVote(eventId, request);
+        URI location = UriUtils.buildLocationUri(vote.voteId());
 
-        return ResponseEntity.ok(voteAt);
+        return ResponseEntity.created(location).body(vote);
     }
 
-    private ResponseEntity<Void> concludeVote(
+    // 특정 이벤트의 모든 투표 조회
+    @GetMapping("/dating-events/{eventId}/votes")
+    public ResponseEntity<List<VoteResponseDto>> getAllVotes(
+            @PathVariable Long hostId,
+            @PathVariable Long eventId) {
+        List<VoteResponseDto> votes = datingEventVoteService.findAllVotesByEventId(eventId);
+
+        return ResponseEntity.ok(votes);
+    }
+
+    // 특정 투표 상세 조회
+    @GetMapping("/dating-events/{eventId}/votes/{voteId}")
+    public ResponseEntity<VoteResponseDto> getVoteDetail(
             @PathVariable Long hostId,
             @PathVariable Long eventId,
             @PathVariable Long voteId) {
-        datingEventVoteService.concludeTo(voteId);
+        VoteResponseDto vote = datingEventVoteService.findVoteById(voteId);
+
+        return ResponseEntity.ok(vote);
+    }
+
+    // 투표 마감
+    @PatchMapping("/dating-events/{eventId}/votes/{voteId}/close")
+    public ResponseEntity<Void> closeVote(
+            @PathVariable Long hostId,
+            @PathVariable Long eventId,
+            @PathVariable Long voteId) {
+        datingEventVoteService.closeVote(voteId);
+
+        return ResponseEntity.noContent().build();
+    }
+
+    // 투표 삭제 (필요하다면)
+    @DeleteMapping("/dating-events/{eventId}/votes/{voteId}")
+    public ResponseEntity<Void> deleteVote(
+            @PathVariable Long hostId,
+            @PathVariable Long eventId,
+            @PathVariable Long voteId) {
+        datingEventVoteService.deleteVote(voteId);
+
         return ResponseEntity.noContent().build();
     }
 

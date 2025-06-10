@@ -3,7 +3,7 @@ package com.grewmeet.datingservice.service.dating;
 import com.grewmeet.datingservice.domain.dating.DatingEvent;
 import com.grewmeet.datingservice.domain.dating.DatingParticipant;
 import com.grewmeet.datingservice.domain.user.User;
-import com.grewmeet.datingservice.dto.event.DatingEventResponse;
+import com.grewmeet.datingservice.dto.event.DatingEventResponseNew;
 import com.grewmeet.datingservice.repository.DatingEventRepository;
 import com.grewmeet.datingservice.repository.ParticipantRepository;
 import com.grewmeet.datingservice.repository.UserRepository;
@@ -22,7 +22,7 @@ public class DatingEventParticipantServiceImpl implements DatingEventParticipant
     private final ParticipationVerificationService participationVerificationService;
 
     @Override
-    public DatingEventResponse joinAt(Long eventId, Long userId) {
+    public DatingEventResponseNew joinAt(Long eventId, Long userId) {
         User user = getUserById(userId);
         DatingEvent event = getEventById(eventId);
 
@@ -32,7 +32,7 @@ public class DatingEventParticipantServiceImpl implements DatingEventParticipant
         DatingParticipant completedParticipation = confirmParticipation(requested, event, user);
         participationRepository.save(completedParticipation);
 
-        return DatingEventResponse.from(completedParticipation.getDatingEvent());
+        return DatingEventResponseNew.from(completedParticipation.getDatingEvent());
     }
 
     private User getUserById(Long userId) {

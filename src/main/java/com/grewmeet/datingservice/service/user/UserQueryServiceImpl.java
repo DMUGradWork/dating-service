@@ -37,6 +37,6 @@ public class UserQueryServiceImpl implements UserQueryService {
         return new DatingEventSummaryDto(
                 datingEvent.getId(),
                 datingEvent.getTitle(),
-                datingEvent.getEventDate());
+                datingEvent.getEventDateTime());
     }
 }

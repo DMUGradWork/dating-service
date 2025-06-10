@@ -24,7 +24,11 @@ public class DatingEventRegistrationServiceImpl implements DatingEventRegistrati
         DatingEvent newDatingEvent = DatingEvent.from(
                 hostUser,
                 request.title(),
-                request.maxParticipants());
+                request.location(),
+                request.eventDateTime(),
+                request.maxMaleParticipantsCount(),
+                request.maxFemaleParticipantsCount(),
+                request.description());
 
         return datingEventRepository.save(newDatingEvent);
     }

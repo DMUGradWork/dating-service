@@ -1,6 +1,7 @@
 package com.grewmeet.datingservice.domain.dating;
 
 import com.grewmeet.datingservice.domain.user.User;
+import com.grewmeet.datingservice.domain.user.role.Gender;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -49,6 +50,14 @@ public class DatingParticipant {
 
     public DatingParticipant confirm(DatingEvent datingEvent, User user) {
         return new DatingParticipant(datingEvent, user, this.participationDateTime);
+    }
+
+    public Boolean isRequestedFromMale() {
+        return user.isMale();
+    }
+
+    public Boolean isRequestedFromFemale() {
+        return user.isFeMale();
     }
 }
 

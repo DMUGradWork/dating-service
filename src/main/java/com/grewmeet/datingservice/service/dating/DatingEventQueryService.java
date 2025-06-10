@@ -1,12 +1,12 @@
 package com.grewmeet.datingservice.service.dating;
 
-import com.grewmeet.datingservice.domain.dating.DatingEvent;
-import com.grewmeet.datingservice.dto.event.DatingEventResponse;
+import com.grewmeet.datingservice.dto.event.DatingEventCardDto;
+import com.grewmeet.datingservice.dto.event.DatingEventResponseNew;
 import java.util.List;
-import org.springframework.http.ResponseEntity;
 
 public interface DatingEventQueryService {
-    List<DatingEventResponse> findAllResponses();
-    DatingEventResponse findByEventId(Long eventId);
-    List<DatingEventResponse> findAllEventsManagedBy(Long hostId);
+    List<DatingEventCardDto> findAllResponses();
+    DatingEventResponseNew findByEventId(Long eventId);
+    List<DatingEventCardDto> findAllEventsManagedBy(Long hostId);
+    List<DatingEventCardDto> findAllEventParticipantsAtUserId(Long userId);
 }

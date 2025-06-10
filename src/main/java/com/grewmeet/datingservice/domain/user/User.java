@@ -1,6 +1,7 @@
 package com.grewmeet.datingservice.domain.user;
 
 import com.grewmeet.datingservice.domain.dating.DatingParticipant;
+import com.grewmeet.datingservice.domain.user.role.Gender;
 import com.grewmeet.datingservice.domain.user.role.UserRole;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -17,6 +18,7 @@ import java.util.List;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.transaction.annotation.Transactional;
 
 @Entity
 @Getter
@@ -37,6 +39,9 @@ public class User {
 
     @Enumerated(EnumType.STRING)
     private UserRole role;
+
+    @Enumerated(EnumType.STRING)
+    private Gender gender;
 
     @OneToMany(mappedBy = "user")
     private final List<DatingParticipant> participants = new ArrayList<>();
@@ -74,7 +79,7 @@ public class User {
     }
 
     public boolean isParticipationLimitReached() {
-        return participants.size() >= MAX_PARTICIPATION_COUNT;
+        return this.participants.size() >= MAX_PARTICIPATION_COUNT;
     }
 
     public boolean hasAlreadyRequested(DatingParticipant participation) {
@@ -84,5 +89,13 @@ public class User {
 
     public void removeParticipation(DatingParticipant participant) {
         participants.remove(participant);
+    }
+
+    public Boolean isMale() {
+        return gender.equals(Gender.MALE);
+    }
+
+    public Boolean isFeMale() {
+        return gender.equals(Gender.FEMALE);
     }
 }

@@ -1,7 +1,8 @@
 package com.grewmeet.datingservice.service.dating;
 
 import com.grewmeet.datingservice.domain.dating.DatingEvent;
-import com.grewmeet.datingservice.dto.event.DatingEventResponse;
+import com.grewmeet.datingservice.dto.event.DatingEventCardDto;
+import com.grewmeet.datingservice.dto.event.DatingEventResponseNew;
 import com.grewmeet.datingservice.repository.DatingEventRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -14,24 +15,31 @@ public class DatingEventQueryServiceImpl implements DatingEventQueryService {
     private final DatingEventRepository datingEventRepository;
 
     @Override
-    public List<DatingEventResponse> findAllResponses() {
+    public List<DatingEventCardDto> findAllResponses() {
         return datingEventRepository.findAll().stream()
-                .map(DatingEventResponse::from)
+                .map(DatingEventCardDto::from)
                 .toList();
     }
 
     @Override
-    public DatingEventResponse findByEventId(Long eventId) {
+    public DatingEventResponseNew findByEventId(Long eventId) {
         DatingEvent findEvent =  datingEventRepository.findById(eventId)
                 .orElseThrow(IllegalStateException::new);
-        return DatingEventResponse.from(findEvent);
+        return DatingEventResponseNew.from(findEvent);
     }
 
     @Override
-    public List<DatingEventResponse> findAllEventsManagedBy(Long hostId) {
+    public List<DatingEventCardDto> findAllEventsManagedBy(Long hostId) {
         return datingEventRepository.findAllByHostUser_Id(hostId).stream()
-                .map(DatingEventResponse::from)
+                .map(DatingEventCardDto::from)
                 .toList();
     }
 
+    @Override
+    public List<DatingEventCardDto> findAllEventParticipantsAtUserId(Long userId) {
+        return datingEventRepository.findAllByParticipants_User_Id(userId)
+                .stream()
+                .map(DatingEventCardDto::from).
+                toList();
+    }
 }

@@ -1,22 +1,16 @@
 package com.grewmeet.datingservice.controller;
 
-import com.grewmeet.datingservice.domain.dating.DatingEvent;
 import com.grewmeet.datingservice.domain.user.User;
-import com.grewmeet.datingservice.dto.event.DatingEventResponse;
+import com.grewmeet.datingservice.dto.event.DatingEventCardDto;
+import com.grewmeet.datingservice.dto.event.DatingEventResponseNew;
 import com.grewmeet.datingservice.dto.user.UserRegistrationRequestDTO;
-import com.grewmeet.datingservice.exception.ServiceUsageCriteriaNotMetException;
-import com.grewmeet.datingservice.exception.UserNotFoundException;
+import com.grewmeet.datingservice.service.dating.DatingEventParticipantService;
 import com.grewmeet.datingservice.service.dating.DatingEventQueryService;
-import com.grewmeet.datingservice.service.user.UserQualificationService;
-import com.grewmeet.datingservice.service.user.UserQueryService;
-import com.grewmeet.datingservice.service.user.UserQueryServiceImpl;
 import com.grewmeet.datingservice.service.user.UserRegistrationService;
 import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.List;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -26,15 +20,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
-import org.springframework.web.util.UriComponentsBuilder;
+
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/dating")
 public class DatingController {
 
-    private final UserQueryService userQueryService;
     private final DatingEventQueryService datingEventQueryService;
+    private final DatingEventParticipantService datingEventParticipationService;
     private final UserRegistrationService userRegistrationService;
 
 //    검증해서 넘어오는 것을 사용할거라 검증부는 별도의 서비스로 처리 예정
@@ -65,42 +59,39 @@ public class DatingController {
         return ResponseEntity.created(location).body(savedUser);
     }
 
-//    //필요성 검증 필요
-//    @GetMapping("/{userId}")
-//    public ResponseEntity<User> retrieveUser(@PathVariable Long userId) {
-//        return ResponseEntity.ok(userQueryService.getUserById(userId));
-//    }
-
     @GetMapping("/dating-events")
-    public List<DatingEventResponse> retrieveAllDatingEvent() {
+    public List<DatingEventCardDto> retrieveAllDatingEvent() {
         return datingEventQueryService.findAllResponses();
     }
 
-//    @PostMapping("/dating-events")
-//    public ResponseEntity<Void> createDatingEvent(@RequestParam Long userId) {
-//        URI redirectUri = UriComponentsBuilder.fromPath("/hosts/{hostId}/dating-events")
-//                .buildAndExpand(userId)
-//                .toUri();
-//
-//        return ResponseEntity.status(HttpStatus.SEE_OTHER).location(redirectUri).build();
-//    }
-
     @GetMapping("/dating-events/{eventId}")
-    public ResponseEntity<DatingEventResponse> retrieveDatingEventById(
+    public ResponseEntity<DatingEventResponseNew> retrieveDatingEventById(
             @PathVariable Long eventId) {
         return ResponseEntity.ok(datingEventQueryService.findByEventId(eventId));
     }
 
-    @PostMapping("/dating-events/{eventId}")
-    public ResponseEntity<?> forwardToJoinEvent(
+    @PostMapping("/dating-events/{eventId}/join")
+    public ResponseEntity<DatingEventResponseNew> joinEvent(
             @PathVariable Long eventId,
             @RequestParam Long userId) {
-        URI uri = ServletUriComponentsBuilder.fromCurrentContextPath()
-                .path("/guest/{userId}/dating-events/{eventId}/join")
-                .buildAndExpand(userId, eventId)
+
+        DatingEventResponseNew joined = datingEventParticipationService.joinAt(eventId, userId);
+
+        URI location = ServletUriComponentsBuilder
+                .fromCurrentRequest()
+                .path("/{userId}")
+                .buildAndExpand(userId)
                 .toUri();
 
-        return ResponseEntity.status(HttpStatus.SEE_OTHER).location(uri).build();
+        return ResponseEntity.created(location).body(joined);
     }
+
+//    @PatchMapping("/dating-events/{eventId}/join")
+//    public ResponseEntity<DatingEventResponse> joinDatingEvent(
+//            @PathVariable Long userId,
+//            @PathVariable Long eventId) {
+//        DatingEventResponse joined = datingEventParticipationService.joinAt(eventId, userId);
+//        return ResponseEntity.accepted().body(joined);
+//    }
 
 }

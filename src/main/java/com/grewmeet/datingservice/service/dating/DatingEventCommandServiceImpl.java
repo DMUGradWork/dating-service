@@ -19,7 +19,14 @@ public class DatingEventCommandServiceImpl implements DatingEventCommandService 
     @Override
     public void updateWith(Long eventId, DatingEventUpdateRequestDTO request) {
         DatingEvent event = getEventById(eventId);
-        event.updateConfig(request.title(), request.maxParticipants());
+
+        event.updateEventInfo(request.title(),
+                request.location(),
+                request.eventDateTime(),
+                request.maxMaleParticipantsCount(),
+                request.maxFemaleParticipantsCount(),
+                request.description());
+
         datingEventRepository.save(event);
     }
 
